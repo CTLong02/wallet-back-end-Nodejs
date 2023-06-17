@@ -37,6 +37,38 @@ class UserController {
         // return user.dataValues;
     }
 
+    async getUserById(id) {
+        const user = await User.findOne({
+            attributes: [
+                'id',
+                'fullname',
+                'gender',
+                'phoneNumbers',
+                'identifyPerson',
+                'numberofAccount',
+                'remainMoney',
+                'avatar',
+                'accessToken',
+            ],
+            where: { id },
+        });
+        const userData = user.dataValues;
+        const resFindingCards = await CardController.findCardByUserId(userData.id);
+        if (resFindingCards.result === 'success') {
+            return {
+                ...userData,
+                cards: [...resFindingCards.data],
+            };
+        } else {
+            return {
+                ...userData,
+                cards: [],
+            };
+        }
+
+        // return user.dataValues;
+    }
+
     async getUser(accountData) {
         try {
             const { phoneNumbers, password } = accountData;
@@ -206,6 +238,27 @@ class UserController {
             }
         } catch (error) {
             res.status(400).json({ result: 'fail', reason: 'Không đủ tham số' });
+        }
+    }
+
+    async updateInformation(form) {
+        try {
+            const { id, gender, password, remainMoney } = form;
+            await User.update(
+                {
+                    gender,
+                    password,
+                    remainMoney,
+                },
+                { where: { id } },
+            );
+            return {
+                result: 'success',
+            };
+        } catch (error) {
+            return {
+                result: 'fail',
+            };
         }
     }
 }

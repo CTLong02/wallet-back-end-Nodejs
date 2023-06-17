@@ -16,6 +16,7 @@ class AccountController {
     }
 
     async createCard(req, res, next) {
+        console.log('token----', req.headers.authorization);
         try {
             const resWithTest = await test(req, 'post');
             console.log('resWithTest', resWithTest);
