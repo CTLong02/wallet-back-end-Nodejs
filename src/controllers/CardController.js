@@ -32,8 +32,8 @@ class CardController {
     async findCardByUserId(userId) {
         try {
             const cards = await Card.findAll(
+                { where: { userId: userId } },
                 { attributes: ['id', 'cardNumbers', 'bankName', 'expireDate'] },
-                { where: { userId } },
             );
             const newCards = cards.map((card, index) => {
                 return { ...card.dataValues, expireDate: card.dataValues.expireDate.toJSON() };

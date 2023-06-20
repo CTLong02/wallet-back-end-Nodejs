@@ -244,6 +244,7 @@ class UserController {
     async updateInformation(form) {
         try {
             const { id, gender, password, remainMoney } = form;
+            console.log('remainMoney', remainMoney);
             await User.update(
                 {
                     gender,

@@ -1,5 +1,6 @@
 const { Model, DataTypes } = require('sequelize');
 const Card = require('./Card');
+const Transaction = require('./Transaction');
 const sequelize = require('../config/database/connect');
 
 class User extends Model {}
@@ -59,4 +60,8 @@ User.init(
 );
 User.hasMany(Card, { foreignKey: { name: 'userId' } });
 Card.belongsTo(User, { foreignKey: { name: 'userId' } });
+User.hasMany(Transaction, { foreignKey: { name: 'senderId' } });
+Transaction.belongsTo(User, { foreignKey: { name: 'senderId' } });
+User.hasMany(Transaction, { foreignKey: { name: 'receiverId' } });
+Transaction.belongsTo(User, { foreignKey: { name: 'receiverId' } });
 module.exports = User;

@@ -1,9 +1,9 @@
-const { DataTypes, Model } = require('sequelize');
 const sequelize = require('../config/database/connect');
+const { DataTypes, Model } = require('sequelize');
 
-class Card extends Model {}
+class Transaction extends Model {}
 
-Card.init(
+Transaction.init(
     {
         id: {
             type: DataTypes.INTEGER,
@@ -11,22 +11,27 @@ Card.init(
             autoIncrement: true,
             allowNull: false,
         },
-        cardNumbers: {
+        message: {
             type: DataTypes.STRING,
-            allowNull: false,
-            validate: {
-                is: /^[0-9]+$/,
-            },
+            allowNull: true,
         },
-        bankName: {
-            type: DataTypes.STRING,
-            allowNull: false,
-        },
-        expireDate: {
+        time: {
             type: DataTypes.DATE,
             allowNull: false,
         },
+        transactionType: {
+            type: DataTypes.STRING,
+            allowNull: false,
+        },
+        money: {
+            type: DataTypes.INTEGER,
+            allowNull: false,
+        },
     },
-    { modelName: 'card', sequelize },
+    {
+        modelName: 'transaction',
+        sequelize,
+    },
 );
-module.exports = Card;
+
+module.exports = Transaction;
