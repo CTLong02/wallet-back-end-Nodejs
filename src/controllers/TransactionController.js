@@ -1,6 +1,46 @@
 const Transaction = require('../models/Transaction');
 class TransactionController {
-    async getTransactionsById(id) {}
+    async getTransactionsBySenderId(senderId) {
+        try {
+            const transactions = await Transaction.findAll({
+                where: { senderId },
+                attributes: ['id', 'message', 'time', 'transactionType', 'money', 'receiverId'],
+            });
+            return {
+                result: 'success',
+                data: [
+                    ...transactions.map((transaction) => {
+                        return { ...transaction.dataValues, time: transaction.dataValues.time.toJSON() };
+                    }),
+                ],
+            };
+        } catch (error) {
+            return {
+                result: 'fail',
+            };
+        }
+    }
+
+    async getTransactionsByReceiverId(receiverId) {
+        try {
+            const transactions = await Transaction.findAll({
+                where: { receiverId },
+                attributes: ['id', 'message', 'time', 'transactionType', 'money', 'senderId'],
+            });
+            return {
+                result: 'success',
+                data: [
+                    ...transactions.map((transaction) => {
+                        return { ...transaction.dataValues, time: transaction.dataValues.time.toJSON() };
+                    }),
+                ],
+            };
+        } catch (error) {
+            return {
+                result: 'fail',
+            };
+        }
+    }
 
     async createTransaction(data) {
         // console.log('data', data);
