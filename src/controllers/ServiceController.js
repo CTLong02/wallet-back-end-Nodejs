@@ -84,38 +84,83 @@ class ServiceController {
 
     async getTransactions(req, res, next) {
         try {
-            const resByTest = await test(req, 'get');
+            const resByTest = await test(req, 'post');
             if (resByTest.result === 'success') {
-                const resWithSenderId = await TransactionController.getTransactionsBySenderId(resByTest.data.id);
-                const resWithReceiverId = await TransactionController.getTransactionsByReceiverId(resByTest.data.id);
-                const transactionSenderNewData = [];
-                const transactionReceiverNewData = [];
-                for (let i = resWithSenderId.data.length - 1; i >= 0; i--) {
-                    const user = await UserController.getUserById(resWithSenderId.data[i].receiverId);
-                    transactionSenderNewData.push({
-                        id: resWithSenderId.data[i].id,
-                        message: resWithSenderId.data[i].message,
-                        time: resWithSenderId.data[i].time,
-                        transactionType: resWithSenderId.data[i].transactionType,
-                        money: resWithSenderId.data[i].money,
-                        receiverName: user.fullname,
-                    });
+                const data = [];
+                const userId = resByTest.data.id;
+                if (req.body.typeOfTransaction === 'all') {
+                    const resByFindTransactions = await TransactionController.getTransactionsById(
+                        userId,
+                        req.body.offset,
+                    );
+                    for (let i = 0; i < resByFindTransactions.data.length; i++) {
+                        const transaction = resByFindTransactions.data[i];
+                        const user = await UserController.getUserById(
+                            transaction['senderId'] === userId ? transaction['receiverId'] : transaction['senderId'],
+                        );
+                        if (transaction['senderId'] === userId) {
+                            data[i] = {
+                                id: transaction.id,
+                                message: transaction.message,
+                                time: transaction.time,
+                                transactionType: transaction.transactionType,
+                                money: transaction.money,
+                                receiver: {
+                                    fullname: user.fullname,
+                                },
+                            };
+                        } else {
+                            data[i] = {
+                                message: transaction.message,
+                                time: transaction.time,
+                                transactionType: transaction.transactionType,
+                                money: transaction.money,
+                                sender: {
+                                    fullname: user.fullname,
+                                },
+                            };
+                        }
+                    }
+                } else if (req.body.typeOfTransaction === 'sender') {
+                    const resByFindTransactions = await TransactionController.getTransactionsBySenderId(
+                        userId,
+                        req.body.offset,
+                    );
+                    for (let i = 0; i < resByFindTransactions.data.length; i++) {
+                        const transaction = resByFindTransactions.data[i];
+                        const user = await UserController.getUserById(transaction['receiverId']);
+                        data[i] = {
+                            id: transaction.id,
+                            message: transaction.message,
+                            time: transaction.time,
+                            transactionType: transaction.transactionType,
+                            money: transaction.money,
+                            receiver: {
+                                fullname: user.fullname,
+                            },
+                        };
+                    }
+                } else {
+                    const resByFindTransactions = await TransactionController.getTransactionsByReceiverId(
+                        userId,
+                        req.body.offset,
+                    );
+                    for (let i = 0; i < resByFindTransactions.data.length; i++) {
+                        const transaction = resByFindTransactions.data[i];
+                        const user = await UserController.getUserById(transaction['senderId']);
+                        data[i] = {
+                            id: transaction.id,
+                            message: transaction.message,
+                            time: transaction.time,
+                            transactionType: transaction.transactionType,
+                            money: transaction.money,
+                            sender: {
+                                fullname: user.fullname,
+                            },
+                        };
+                    }
                 }
-                for (let i = resWithReceiverId.data.length - 1; i >= 0; i--) {
-                    const user = await UserController.getUserById(resWithReceiverId.data[i].senderId);
-                    transactionReceiverNewData.push({
-                        id: resWithReceiverId.data[i].id,
-                        message: resWithReceiverId.data[i].message,
-                        time: resWithReceiverId.data[i].time,
-                        transactionType: resWithReceiverId.data[i].transactionType,
-                        money: resWithReceiverId.data[i].money,
-                        receiverName: user.fullname,
-                    });
-                }
-                res.status(200).json({
-                    result: 'success',
-                    data: { sends: [...transactionSenderNewData], receives: [...transactionReceiverNewData] },
-                });
+                res.status(201).json({ result: 'success', data: [...data] });
             } else {
                 res.status(resByTest.statusCode).json({ result: resByTest.result, reason: resByTest.reason });
             }
